@@ -52,6 +52,12 @@ const DistributorSchema = new mongoose.Schema({
 		},
 		formattedAddress: String
 	},
+	transactions: [
+		{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'transaction'
+		}
+	],
 	createdAt: {
 		type: Date,
 		default: Date.now
@@ -63,15 +69,18 @@ const DistributorSchema = new mongoose.Schema({
 });
 
 DistributorSchema.pre('save', async function(next) {
-	const loc = await geocoder.geocode(this.address);
-	this.location = {
-		type: 'Point',
-		coordinates: [ loc[0].longitude, loc[0].latitude ],
-		formattedAddress: loc[0].formattedAddress
-	};
-
-	// Do not save address
-	this.address = undefined;
+	try {
+		if (this.isModified('address')) {
+			const loc = await geocoder.geocode(this.address);
+			this.location = {
+				type: 'Point',
+				coordinates: [ loc[0].longitude, loc[0].latitude ],
+				formattedAddress: loc[0].formattedAddress
+			};
+		}
+	} catch (error) {
+		console.log('geocoder error', error);
+	}
 });
 
 module.exports = mongoose.model('distributor', DistributorSchema);
