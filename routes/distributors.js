@@ -6,6 +6,7 @@ const { config } = require('dotenv');
 const Distributor = require('../models/Distributor');
 const parsePhone = require('../utils/parsePhone');
 const mailer = require('../utils/mailer');
+const { getToken } = require('../middleware/auth');
 
 config();
 /* Create a Distributor */
@@ -51,7 +52,9 @@ router.post(
 
 			const newDistributor = await Distributor.create(distributor);
 
-			res.status(200).send({ status: 'success', data: newDistributor });
+			const { token } = (await getToken(newDistributor)) || '';
+
+			res.status(200).send({ status: 'success', data: { ...newDistributor.toJSON(), token } });
 
 			const mailData = {
 				subject: 'Thanks for choosing to be a GasMan',

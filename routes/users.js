@@ -6,6 +6,7 @@ const { config } = require('dotenv');
 const User = require('../models/User');
 const parsePhone = require('../utils/parsePhone');
 const mailer = require('../utils/mailer');
+const { getToken } = require('../middleware/auth');
 
 config();
 /* Create a User */
@@ -45,7 +46,9 @@ router.post(
 
 			const newUser = await User.create(user);
 
-			res.status(200).send({ status: 'success', data: newUser });
+			const { token } = (await getToken(newUser)) || '';
+
+			res.status(200).send({ status: 'success', data: { ...newUser.toJSON(), token } });
 
 			const mailData = {
 				subject: 'Thanks for choosing GasMan',
