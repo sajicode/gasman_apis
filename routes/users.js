@@ -6,7 +6,7 @@ const { config } = require('dotenv');
 const User = require('../models/User');
 const parsePhone = require('../utils/parsePhone');
 const mailer = require('../utils/mailer');
-const { getToken } = require('../middleware/auth');
+const { getToken, authUser } = require('../middleware/auth');
 
 config();
 /* Create a User */
@@ -110,14 +110,8 @@ router.post(
 
 /* GET all users */
 
-router.get('/', async (req, res) => {
+router.get('/', authUser, async (req, res) => {
 	// todo check auth
-	// if (req.user.role !== 'admin') {
-	// 	res.status(403).send({
-	// 		status: 'fail',
-	// 		message: 'Unauthorized request.'
-	// 	});
-	// }
 
 	try {
 		const users = await User.find({}).select('-password');
@@ -135,16 +129,10 @@ router.get('/', async (req, res) => {
 });
 
 /* GET One User */
-router.get('/:id', async (req, res) => {
+router.get('/:id', authUser, async (req, res) => {
 	const { id } = req.params;
 
 	// todo check auth
-	// if (req.user.id !== id && req.user.role !== 'admin') {
-	// 	return res.status(403).send({
-	// 		status: 'fail',
-	// 		message: 'Unauthorized request.'
-	// 	});
-	// }
 
 	try {
 		const user = await User.findById(id).select('-password');
@@ -161,7 +149,7 @@ router.get('/:id', async (req, res) => {
 	}
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', authUser, async (req, res) => {
 	const { id } = req.params;
 	const { fullName, phone, email, password } = req.body;
 
@@ -195,7 +183,7 @@ router.put('/:id', async (req, res) => {
 	}
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authUser, async (req, res) => {
 	const { id } = req.params;
 	try {
 		const user = await User.findById(id);
