@@ -62,4 +62,114 @@ router.post(
 	}
 );
 
+/* GET all distributors */
+
+router.get('/', async (req, res) => {
+	// todo check auth
+	// if (req.user.role !== 'admin') {
+	// 	res.status(403).send({
+	// 		status: 'fail',
+	// 		message: 'Unauthorized request.'
+	// 	});
+	// }
+
+	try {
+		const distributors = await Distributor.find({}).select('-password');
+		res.status(200).send({
+			status: 'success',
+			data: distributors
+		});
+	} catch (err) {
+		console.error(err.message);
+		res.status(500).send({
+			status: 'fail',
+			message: 'Server error.'
+		});
+	}
+});
+
+/* GET One Distributor */
+router.get('/:id', async (req, res) => {
+	const { id } = req.params;
+
+	// todo check auth
+	// if (req.user.id !== id && req.user.role !== 'admin') {
+	// 	return res.status(403).send({
+	// 		status: 'fail',
+	// 		message: 'Unauthorized request.'
+	// 	});
+	// }
+
+	try {
+		const distributor = await Distributor.findById(id).select('-password');
+		res.status(200).send({
+			status: 'success',
+			data: distributor
+		});
+	} catch (err) {
+		console.error(err.message);
+		res.status(500).send({
+			status: 'fail',
+			message: 'Server error'
+		});
+	}
+});
+
+/* Update One Distributor */
+router.put('/:id', async (req, res) => {
+	const { id } = req.params;
+	const { fullName, phone, email, password, photo, deliveryVehicle, address } = req.body;
+
+	// Build distributor object
+	const distributorFields = {};
+	if (fullName) distributorFields.fullName = fullName;
+	if (phone) distributorFields.phone = phone;
+	if (email) distributorFields.email = email;
+	if (password) {
+		const salt = await bcrypt.genSalt(10);
+		hashedPassword = await bcrypt.hash(password, salt);
+
+		distributorFields.password = hashedPassword;
+	}
+	if (photo) distributorFields.photo = photo;
+	if (deliveryVehicle) distributorFields.deliveryVehicle = deliveryVehicle;
+	if (address) distributorFields.address = address;
+
+	distributorFields.updatedAt = Date.now();
+
+	try {
+		let distributor = await Distributor.findById(id);
+
+		if (!distributor) return res.status(404).send({ status: 'fail', message: 'Distributor not found' });
+
+		// todo validate requesting user
+
+		distributor = await Distributor.findOneAndUpdate({ _id: id }, { $set: distributorFields }, { new: true });
+
+		res.status(200).send({ status: 'success', data: distributor });
+	} catch (err) {
+		console.error(err.message);
+		res.status(500).send({ status: 'fail', message: 'Internal server error' });
+	}
+});
+
+/* Delete One Distrinutor */
+router.delete('/:id', async (req, res) => {
+	const { id } = req.params;
+	try {
+		const user = await User.findById(id);
+
+		if (!user) return res.status(404).send({ status: 'fail', message: 'User not found' });
+
+		//* validate requesting user
+
+		await User.findByIdAndRemove(id);
+
+		res.status(200).send({ status: 'success', message: 'User removed' });
+	} catch (err) {
+		console.error(err.message);
+		res.status(500).send({ status: 'fail', message: 'Internal Server Error' });
+	}
+});
+
 module.exports = router;

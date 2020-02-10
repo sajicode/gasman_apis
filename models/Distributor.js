@@ -68,6 +68,7 @@ const DistributorSchema = new mongoose.Schema({
 	}
 });
 
+// todo update location cordinates on distributor update
 DistributorSchema.pre('save', async function(next) {
 	try {
 		if (this.isModified('address')) {
@@ -77,6 +78,7 @@ DistributorSchema.pre('save', async function(next) {
 				coordinates: [ loc[0].longitude, loc[0].latitude ],
 				formattedAddress: loc[0].formattedAddress
 			};
+			next();
 		}
 	} catch (error) {
 		console.log('geocoder error', error);
