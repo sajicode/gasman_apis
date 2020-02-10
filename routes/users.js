@@ -56,4 +56,109 @@ router.post(
 	}
 );
 
+/* GET all users */
+
+router.get('/', async (req, res) => {
+	// todo check auth
+	// if (req.user.role !== 'admin') {
+	// 	res.status(403).send({
+	// 		status: 'fail',
+	// 		message: 'Unauthorized request.'
+	// 	});
+	// }
+
+	try {
+		const users = await User.find({}).select('-password');
+		res.status(200).send({
+			status: 'success',
+			data: users
+		});
+	} catch (err) {
+		console.error(err.message);
+		res.status(500).send({
+			status: 'fail',
+			message: 'Server error.'
+		});
+	}
+});
+
+/* GET One User */
+router.get('/:id', async (req, res) => {
+	const { id } = req.params;
+
+	// todo check auth
+	// if (req.user.id !== id && req.user.role !== 'admin') {
+	// 	return res.status(403).send({
+	// 		status: 'fail',
+	// 		message: 'Unauthorized request.'
+	// 	});
+	// }
+
+	try {
+		const user = await User.findById(id).select('-password');
+		res.status(200).send({
+			status: 'success',
+			data: user
+		});
+	} catch (err) {
+		console.error(err.message);
+		res.status(500).send({
+			status: 'fail',
+			message: 'Server error'
+		});
+	}
+});
+
+router.put('/:id', async (req, res) => {
+	const { id } = req.params;
+	const { fullName, phone, email, password } = req.body;
+
+	// Build user object
+	const userFields = {};
+	if (fullName) userFields.fullName = fullName;
+	if (phone) userFields.phone = phone;
+	if (email) userFields.email = email;
+	if (password) {
+		const salt = await bcrypt.genSalt(10);
+		hashedPassword = await bcrypt.hash(password, salt);
+
+		userFields.password = hashedPassword;
+	}
+
+	userFields.updatedAt = Date.now();
+
+	try {
+		let user = await User.findById(id);
+
+		if (!user) return res.status(404).send({ status: 'fail', message: 'User not found' });
+
+		// todo validate requesting user
+
+		user = await User.findByIdAndUpdate(id, { $set: userFields }, { new: true });
+
+		res.status(200).send({ status: 'success', data: user });
+	} catch (err) {
+		console.error(err.message);
+		res.status(500).send({ status: 'fail', message: 'Internal server error' });
+	}
+});
+
+router.delete('/:id', async (req, res) => {
+	const { id } = req.params;
+	try {
+		const user = await User.findById(id);
+
+		if (!user) return res.status(404).send({ status: 'fail', message: 'User not found' });
+
+		//* validate requesting user
+
+		await User.findByIdAndRemove(id);
+
+		res.status(200).send({ status: 'success', message: 'User removed' });
+	} catch (err) {
+		console.error(err.message);
+		res.status(500).send({ status: 'fail', message: 'Internal Server Error' });
+	}
+});
+
 module.exports = router;
