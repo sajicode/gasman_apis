@@ -5,6 +5,7 @@ const { check, validationResult } = require('express-validator');
 const { config } = require('dotenv');
 const User = require('../models/User');
 const parsePhone = require('../utils/parsePhone');
+const mailer = require('../utils/mailer');
 
 config();
 /* Create a User */
@@ -45,6 +46,14 @@ router.post(
 			const newUser = await User.create(user);
 
 			res.status(200).send({ status: 'success', data: newUser });
+
+			const mailData = {
+				subject: 'Thanks for choosing GasMan',
+				body: 'You will receive a link shortly',
+				recipient: newUser.email
+			};
+
+			mailer(mailData);
 		} catch (err) {
 			console.error(err.message);
 			if (err.code === 11000) {
