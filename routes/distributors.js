@@ -74,6 +74,46 @@ router.post(
 	}
 );
 
+/* Dsitributor login */
+router.post(
+	'/login',
+	[
+		check('email', 'Please include a valid email').isEmail(),
+		check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 })
+	],
+	async (req, res) => {
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(400).json({ status: 'fail', errors: errors.array() });
+		}
+
+		const { email, password } = req.body;
+
+		try {
+			let distributor = await Distributor.findOne({ email });
+
+			if (!distributor) {
+				return res.status(400).send({ status: 'fail', message: 'Distributor does not exist' });
+			}
+
+			const isMatch = await bcrypt.compare(password, distributor.password);
+
+			if (!isMatch) {
+				return res.status(400).send({ status: 'fail', message: 'Invalid credentials' });
+			}
+
+			const { token } = (await getToken(distributor)) || '';
+
+			res.status(200).send({ status: 'success', data: { ...distributor.toJSON(), token } });
+
+			// * sign auth token
+		} catch (err) {
+			console.error(err.message);
+			res.status(500).send({ status: 'fail', message: 'Invalid credentials' });
+		}
+	}
+);
+
 /* GET all distributors */
 
 router.get('/', async (req, res) => {
@@ -169,15 +209,15 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
 	const { id } = req.params;
 	try {
-		const user = await User.findById(id);
+		const distributor = await Distributor.findById(id);
 
-		if (!user) return res.status(404).send({ status: 'fail', message: 'User not found' });
+		if (!distributor) return res.status(404).send({ status: 'fail', message: 'Distributor not found' });
 
 		//* validate requesting user
 
-		await User.findByIdAndRemove(id);
+		await Distributor.findByIdAndRemove(id);
 
-		res.status(200).send({ status: 'success', message: 'User removed' });
+		res.status(200).send({ status: 'success', message: 'Distributor removed' });
 	} catch (err) {
 		console.error(err.message);
 		res.status(500).send({ status: 'fail', message: 'Internal Server Error' });

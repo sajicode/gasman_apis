@@ -68,6 +68,46 @@ router.post(
 	}
 );
 
+/* User login */
+router.post(
+	'/login',
+	[
+		check('email', 'Please include a valid email').isEmail(),
+		check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 })
+	],
+	async (req, res) => {
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(400).json({ status: 'fail', errors: errors.array() });
+		}
+
+		const { email, password } = req.body;
+
+		try {
+			let user = await User.findOne({ email });
+
+			if (!user) {
+				return res.status(400).send({ status: 'fail', message: 'User does not exist' });
+			}
+
+			const isMatch = await bcrypt.compare(password, user.password);
+
+			if (!isMatch) {
+				return res.status(400).send({ status: 'fail', message: 'Invalid credentials' });
+			}
+
+			const { token } = (await getToken(user)) || '';
+
+			res.status(200).send({ status: 'success', data: { ...user.toJSON(), token } });
+
+			// * sign auth token
+		} catch (err) {
+			console.error(err.message);
+			res.status(500).send({ status: 'fail', message: 'Invalid credentials' });
+		}
+	}
+);
+
 /* GET all users */
 
 router.get('/', async (req, res) => {
