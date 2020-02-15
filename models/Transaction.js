@@ -23,6 +23,10 @@ const TransactionSchema = new mongoose.Schema({
 		type: Number,
 		required: true
 	},
+	completed: {
+		type: Boolean,
+		default: false
+	},
 	address: {
 		type: String,
 		required: [ true, 'Please add an address' ]
@@ -36,6 +40,10 @@ const TransactionSchema = new mongoose.Schema({
 			type: [ Number ],
 			index: '2dsphere'
 		},
+		streetNumber: String,
+		streetName: String,
+		lga: String,
+		state: String,
 		formattedAddress: String
 	},
 	createdAt: {
@@ -53,7 +61,11 @@ TransactionSchema.pre('save', async function(next) {
 	this.location = {
 		type: 'Point',
 		coordinates: [ loc[0].longitude, loc[0].latitude ],
-		formattedAddress: loc[0].formattedAddress
+		formattedAddress: loc[0].formattedAddress,
+		streetNumber: loc[0].streetNumber || 'N/A',
+		streetName: loc[0].streetName || 'N/A',
+		lga: loc[0].administrativeLevels.level2long || 'N/A',
+		state: loc[0].administrativeLevels.level1long || 'N/A'
 	};
 
 	// Do not save address
