@@ -9,6 +9,7 @@ const connectDB = require('./config/db');
 let indexRouter = require('./routes/index');
 let usersRouter = require('./routes/users');
 let distributorRouter = require('./routes/distributors');
+let requestRouter = require('./routes/request');
 
 dotenv.config();
 
@@ -22,9 +23,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use('/distributors', distributorRouter);
+app.use('/gasman/', indexRouter);
+app.use('/gasman/users', usersRouter);
+app.use('/gasman/distributors', distributorRouter);
+app.use('/gasman/request', requestRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
