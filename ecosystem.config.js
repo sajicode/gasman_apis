@@ -6,7 +6,7 @@ module.exports = {
 	apps: [
 		{
 			name: 'Gasman-API Server',
-			script: './bin/www',
+			script: 'app.js',
 			source_map_support: true,
 			exec_mode: 'cluster',
 			instances: 'max'
