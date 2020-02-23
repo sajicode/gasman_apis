@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
+	deviceID: {
+		type: String,
+		required: true,
+		trim: true
+	},
 	fullName: {
 		type: String,
 		required: true,
