@@ -16,6 +16,7 @@ router.post(
 	[
 		check('fullName', 'Full name is required').not().isEmpty(),
 		check('email', 'Please include a valid email').isEmail(),
+		check('deviceID', 'Device ID is required').notEmpty().isString(),
 		check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 }),
 		check('phone', 'Please enter a valid phone number').isLength({ min: 11 })
 	],
@@ -25,7 +26,7 @@ router.post(
 			return res.status(400).json({ status: 'fail', errors: errors.array() });
 		}
 
-		let { fullName, email, password, phone } = req.body;
+		let { fullName, email, password, phone, deviceID } = req.body;
 
 		phone = phone.replace('+2340', '+234');
 
@@ -33,6 +34,7 @@ router.post(
 
 		try {
 			const user = {
+				deviceID,
 				fullName,
 				email,
 				password,
@@ -151,13 +153,14 @@ router.get('/:id', authUser, async (req, res) => {
 
 router.put('/:id', authUser, async (req, res) => {
 	const { id } = req.params;
-	const { fullName, phone, email, password } = req.body;
+	const { fullName, phone, email, password, deviceID } = req.body;
 
 	// Build user object
 	const userFields = {};
 	if (fullName) userFields.fullName = fullName;
 	if (phone) userFields.phone = phone;
 	if (email) userFields.email = email;
+	if (deviceID) userFields.deviceID = deviceID;
 	if (password) {
 		const salt = await bcrypt.genSalt(10);
 		hashedPassword = await bcrypt.hash(password, salt);

@@ -18,6 +18,7 @@ router.post(
 		check('email', 'Please include a valid email').isEmail(),
 		check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 }),
 		check('phone', 'Please enter a valid phone number').isLength({ min: 11 }),
+		check('deviceID', 'Device ID is required').notEmpty().isString(),
 		check('photo', 'Please upload a picture').not().isEmpty(),
 		check('deliveryVehicle', 'Please enter a delivery vehicle').not().isEmpty(),
 		check('address', 'Please enter an address').not().isEmpty()
@@ -28,7 +29,7 @@ router.post(
 			return res.status(400).json({ status: 'fail', errors: errors.array() });
 		}
 
-		let { fullName, email, password, phone, photo, deliveryVehicle, address } = req.body;
+		let { fullName, email, password, phone, photo, deliveryVehicle, address, deviceID } = req.body;
 
 		phone = phone.replace('+2340', '+234');
 
@@ -40,6 +41,7 @@ router.post(
 				email,
 				password,
 				phone,
+				deviceID,
 				photo,
 				deliveryVehicle,
 				address,
@@ -165,6 +167,7 @@ router.put('/:id', authUser, async (req, res) => {
 	if (fullName) distributorFields.fullName = fullName;
 	if (phone) distributorFields.phone = phone;
 	if (email) distributorFields.email = email;
+	if (deviceID) distributorFields.deviceID = deviceID;
 	if (password) {
 		const salt = await bcrypt.genSalt(10);
 		hashedPassword = await bcrypt.hash(password, salt);
