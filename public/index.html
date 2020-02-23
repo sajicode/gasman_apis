@@ -15,6 +15,18 @@
       console.log(data);
       socket.emit('test event', { ack: 'message sent' });
     });
+    socket.on('errors', function(data) {
+      console.log("Errors: ", data);
+    })
+    socket.on('no-vendor-user-1234', function(data) {
+      console.log(data)
+    })
+    socket.on('accepted-user-1234', function(data){
+      console.log("Accepted: ", data);
+    })
+    socket.on('request-vendor-1234', function(data) {
+      console.log("transaction: ", data);
+    })
   </script>
 </body>
 </html>
