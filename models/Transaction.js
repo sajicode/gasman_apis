@@ -4,14 +4,13 @@ const geocoder = require('../utils/geocoder');
 const TransactionSchema = new mongoose.Schema({
 	paymentMethod: {
 		type: String,
-		required: true,
 		trim: true
 	},
 	distributor: {
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'distributor'
 	},
-	customer: {
+	user: {
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'user'
 	},
@@ -67,9 +66,6 @@ TransactionSchema.pre('save', async function(next) {
 		lga: loc[0].administrativeLevels.level2long || 'N/A',
 		state: loc[0].administrativeLevels.level1long || 'N/A'
 	};
-
-	// Do not save address
-	this.address = undefined;
 });
 
 module.exports = mongoose.model('transaction', TransactionSchema);
