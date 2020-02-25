@@ -10,7 +10,7 @@ const TransactionSchema = new mongoose.Schema({
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'distributor'
 	},
-	customer: {
+	user: {
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'user'
 	},

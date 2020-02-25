@@ -6,6 +6,7 @@ function emitRequest(listener, data) {
 	socket.io().on('connection', (socket) => {
 		console.log('socket connected');
 		socket.emit(listener, data);
+		// return socket;
 	});
 }
 const notifyVendor = async (vendorList, transaction) => {
@@ -41,7 +42,7 @@ const acknowledgeRequest = async (data) => {
 			return;
 		}
 
-		console.log(transaction);
+		// console.log(transaction);
 		transaction = Transaction.findByIdAndUpdate(
 			transaction_id,
 			{ $set: { distributor: distributor_id } },
@@ -50,10 +51,12 @@ const acknowledgeRequest = async (data) => {
 			.populate('user')
 			.populate('distributor');
 
-		console.log(transaction);
-		emitRequest(`accepted-${transaction.user.deviceID}`, transaction);
+		// console.log(transaction);
+		// emitRequest(`accepted-${transaction.customer.deviceID}`, transaction);
+		return transaction;
 	} catch (error) {
-		emitRequest(errors, error.message);
+		emitRequest('errors', error.message);
+		throw new Error(error);
 	}
 };
 
@@ -72,3 +75,17 @@ module.exports = {
 	acknowledgeRequest,
 	emitRequest
 };
+
+// require('../config/socket').io().on('connection', function(socket) {
+// 	console.log('socket module connected');
+
+// 	socket.on('test two', function(data) {
+// 		console.log(data);
+// 	});
+
+// 	socket.on('test event', function(data) {
+// 		console.log(data);
+// 	});
+
+// 	// socket.emit('test2', { test: 'passed' });
+// });

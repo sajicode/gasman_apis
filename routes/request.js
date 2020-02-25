@@ -6,7 +6,7 @@ const Distributor = require('../models/Distributor');
 const Transaction = require('../models/Transaction');
 const { authUser } = require('../middleware/auth');
 const geocoder = require('../utils/geocoder');
-const { notifyVendor, cancelRequest, emitRequest } = require('../utils/notifyVendor');
+const { notifyVendor, cancelRequest, emitRequest, acknowledgeRequest } = require('../utils/notifyVendor');
 
 config();
 
@@ -53,7 +53,7 @@ router.post(
 		//* create transaction
 		const transaction = {
 			paymentMethod: payment_method,
-			customer: id,
+			user: id,
 			amount: pricePerKg * quantity,
 			quantity,
 			address
@@ -77,10 +77,10 @@ router.post(
 );
 
 router.post(
-	'/mimick',
+	'/acknowledge',
 	[
 		check('distributor_id', 'Distributor ID is required').not().isEmpty().isString(),
-		check('transaction_id', 'Transaction ID is required').notEmpty().isNumeric()
+		check('transaction_id', 'Transaction ID is required').notEmpty().isString()
 	],
 	async (req, res) => {
 		const errors = validationResult(req);
@@ -88,8 +88,21 @@ router.post(
 			return res.status(400).json({ status: 'fail', errors: errors.array() });
 		}
 
-		emitRequest('acknowledged', { distributor_id, transaction_id });
-		res.status(200).send({ status: 'success', data: 'Request acknowledgd' });
+		const { distributor_id, transaction_id } = req.body;
+
+		// emitRequest('acknowledged', { distributor_id, transaction_id });
+		let data = {
+			distributor_id,
+			transaction_id
+		};
+
+		try {
+			let result = await acknowledgeRequest(data);
+			res.status(200).send({ status: 'success', data: result });
+		} catch (error) {
+			console.error(error);
+			res.status(500).send({ status: 'fail', message: error });
+		}
 	}
 );
 

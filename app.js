@@ -35,10 +35,15 @@ io.on('connection', function(socket) {
 	socket.on('test event', function(data) {
 		console.log(data);
 	});
+	socket.on('test two', function(data) {
+		console.log(data);
+	});
 	socket.on('acknowledged', function(data) {
 		acknowledgeRequest(data);
 	});
 });
+
+require('./utils/notifyVendor');
 
 app.use('/gasman/', indexRouter);
 app.use('/gasman/users', usersRouter);
