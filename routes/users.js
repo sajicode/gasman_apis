@@ -7,6 +7,7 @@ const User = require('../models/User');
 const parsePhone = require('../utils/parsePhone');
 const mailer = require('../utils/mailer');
 const { getToken, authUser } = require('../middleware/auth');
+const { createWallet } = require('../middleware/wallet');
 
 config();
 /* Create a User */
@@ -58,6 +59,7 @@ router.post(
 				recipient: newUser.email
 			};
 
+			createWallet(newUser._id);
 			mailer(mailData);
 		} catch (err) {
 			console.error(err.message);
